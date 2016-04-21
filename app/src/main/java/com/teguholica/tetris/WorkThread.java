@@ -43,6 +43,10 @@ import android.view.SurfaceHolder;
 
 import com.teguholica.tetris.activities.GameActivity;
 
+/**
+ * 负责全部的绘制
+ *
+ */
 public class WorkThread extends Thread {
      
     /**
@@ -104,7 +108,7 @@ public class WorkThread extends Thread {
 	            
 	            if(PreferenceManager.getDefaultSharedPreferences(host).getBoolean("pref_fpslimit", false)) {
 		            lastFrameDuration = tempTime - lastFrameStartingTime;
-		            if(lastFrameDuration > (1000.0f/fpslimit))
+		            if(lastFrameDuration > (1000.0f/fpslimit)) //间隔多少s绘制
 		            	lastDelay = Math.max(0, lastDelay - 25);
 		            else
 		            	lastDelay+= 25;

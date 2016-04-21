@@ -167,8 +167,9 @@ public class Display extends Component {
 		}
 
 		// Background
-		//paint.setColor(host.getResources().getColor(color.background_dark));
-		//c.drawRect(0, 0, c.getWidth()-1, c.getHeight()-1, paint);
+//		paint.setColor(host.getResources().getColor(color.white));
+//		c.drawRect(0, 0, c.getWidth()-1, c.getHeight()-1, paint);
+        // 把下面的注释掉就会一直往下绘制 轨迹的赶脚
 		c.drawColor(Color.argb(0, 0, 0, 0), android.graphics.PorterDuff.Mode.CLEAR);
 
         //这个画已有的

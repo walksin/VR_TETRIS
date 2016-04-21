@@ -70,7 +70,9 @@ public class BlockBoardView extends SurfaceView implements Callback {
 	
 	public void init() {
 		setZOrderOnTop(true);
+        //SUERFACE 的callback
 		getHolder().addCallback(this);
+        //设置透明
 		getHolder().setFormat(PixelFormat.TRANSPARENT);
 	}
 
