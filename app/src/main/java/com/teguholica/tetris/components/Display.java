@@ -43,6 +43,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.teguholica.tetris.R;
 import com.teguholica.tetris.Row;
@@ -126,13 +127,20 @@ public class Display extends Component {
 			host.game.getBoard().invalidate();
 			//portraitInitialized = false;
 			landscapeInitialized = true;
-			squaresize   = (int)(((c.getHeight()-1) - 2*rowOffset)/rows);
-			int size2 = (int)(((c.getHeight()-1) - 2*columnOffset)/(columns + 4 + host.getResources().getInteger(R.integer.padding_columns)));
-			if(size2 < squaresize) {
+			//方块大小 整个高度 - 上下padding 除以行数
+            squaresize   = (int)(((c.getHeight()-1) - 2*rowOffset)/rows);
+
+
+            int size2 = (int)(((c.getHeight()-1) - 2*columnOffset)/(columns + 4 + host.getResources().getInteger(R.integer.padding_columns)));
+            Log.d("","size2:"+size2+" squaresize:"+squaresize);
+            if(size2 < squaresize) {
 				squaresize = size2;
 				rowOffset = (int)(((c.getHeight()-1) - squaresize*rows)/2);
-			} else
-				columnOffset = (int)(((c.getWidth()-1) - squaresize*(host.getResources().getInteger(R.integer.padding_columns)+4+columns))/2);
+			} else{
+//                columnOffset = (int)(((c.getWidth()-1) - squaresize*(host.getResources().getInteger(R.integer.padding_columns)+4+columns))/2);
+                columnOffset = (int)(((c.getWidth()-1) - squaresize*columns)/2);
+//                columnOffset = 0;
+            }
 			gridRowBorder = rowOffset + squaresize*rows;
 			gridColumnBorder = columnOffset + squaresize*columns;
 			prev_top = rowOffset;
@@ -164,7 +172,9 @@ public class Display extends Component {
 			textEmptySpacing = ((textBottom - textTop) - (textLines*(textHeight))) / (3 + fpsenabled);
 			
 			host.controls.setPreviewRect(new Rect(prev_left,prev_top,prev_right,prev_bottom));
-		}
+
+            Log.d("","columnOffset:"+columnOffset);
+        }
 
 		// Background
 //		paint.setColor(host.getResources().getColor(color.white));

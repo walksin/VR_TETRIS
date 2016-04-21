@@ -45,117 +45,133 @@ import com.teguholica.tetris.activities.GameActivity;
 
 /**
  * 负责全部的绘制
- *
  */
 public class WorkThread extends Thread {
-     
+
     /**
-	 * 
-	 */
-	private SurfaceHolder surfaceHolder;
+     *
+     */
+    private SurfaceHolder surfaceHolder;
     private boolean runFlag = false;
     boolean firstTime = true;
-	public long lastFrameDuration = 0;
-	private long lastFrameStartingTime = 0;
-	int fpslimit;
-	long lastDelay;
-	private GameActivity host;
+    public long lastFrameDuration = 0;
+    private long lastFrameStartingTime = 0;
+    int fpslimit;
+    long lastDelay;
+    private GameActivity host;
+    private SurfaceHolder secondHolder;
 
     public WorkThread(GameActivity ga, SurfaceHolder sh) {
-    	host = ga;
-		this.surfaceHolder = sh;
+        host = ga;
+        this.surfaceHolder = sh;
         try {
-        	fpslimit = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(host).getString("pref_fpslimittext", "35"));
-        } catch(NumberFormatException e) {
-        	fpslimit = 25;
+            fpslimit = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(host).getString("pref_fpslimittext", "35"));
+        } catch (NumberFormatException e) {
+            fpslimit = 25;
         }
-        if(fpslimit < 5)
-        	fpslimit = 5;
-        
-		lastDelay = 100;
+        if (fpslimit < 5)
+            fpslimit = 5;
+
+        lastDelay = 100;
     }
 
     public void setRunning(boolean run) {
         this.runFlag = run;
     }
-    
+
+    public boolean getRunning(){
+        return this.runFlag;
+    }
+
     @Override
     public void run() {
         Canvas c;
+        Canvas canvasAsync;
         long tempTime = System.currentTimeMillis();
 
-		long fpsUpdateTime = tempTime + 200;
-		int frames = 0;
-		int frameCounter[] = {0, 0, 0, 0, 0};
-		int i = 0;
-        
+        long fpsUpdateTime = tempTime + 200;
+        int frames = 0;
+        int frameCounter[] = {0, 0, 0, 0, 0};
+        int i = 0;
+
         while (this.runFlag) {
-	            if(firstTime){
-	            	firstTime = false;
-	            	continue;
-	            }
-	            
+            if (firstTime) {
+                firstTime = false;
+                continue;
+            }
+
 	            /* FPS CONTROL */
-	            tempTime = System.currentTimeMillis();
-	            
-	            try {
-	            	fpslimit = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(host).getString("pref_fpslimittext", "35"));
-	            } catch(NumberFormatException e) {
-	            	fpslimit = 35;
-	            }
-	            if(fpslimit < 5)
-	            	fpslimit = 5;
-	            
-	            if(PreferenceManager.getDefaultSharedPreferences(host).getBoolean("pref_fpslimit", false)) {
-		            lastFrameDuration = tempTime - lastFrameStartingTime;
-		            if(lastFrameDuration > (1000.0f/fpslimit)) //间隔多少s绘制
-		            	lastDelay = Math.max(0, lastDelay - 25);
-		            else
-		            	lastDelay+= 25;
-		            
-		            if(lastDelay == 0) {} // no Sleep
-		            else {
-			            try {// do sleep!
-							Thread.sleep(lastDelay);
-						} catch (InterruptedException e) {
-							// e.printStackTrace(); ignore this shit
-						}
-		            }
-		            lastFrameStartingTime = tempTime;
-	            }
-	            
-	            if(tempTime >= fpsUpdateTime) {
-	            	i = (i + 1) % 5;
-		    		fpsUpdateTime += 200;
-		    		frames = frameCounter[0] + frameCounter[1] + frameCounter[2] + frameCounter[3] + frameCounter[4];
-		            frameCounter[i] = 0;
-	            }
-	            frameCounter[i]++;
+            tempTime = System.currentTimeMillis();
+
+            try {
+                fpslimit = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(host).getString("pref_fpslimittext", "35"));
+            } catch (NumberFormatException e) {
+                fpslimit = 35;
+            }
+            if (fpslimit < 5)
+                fpslimit = 5;
+
+            if (PreferenceManager.getDefaultSharedPreferences(host).getBoolean("pref_fpslimit", false)) {
+                lastFrameDuration = tempTime - lastFrameStartingTime;
+                if (lastFrameDuration > (1000.0f / fpslimit)) //间隔多少s绘制
+                    lastDelay = Math.max(0, lastDelay - 25);
+                else
+                    lastDelay += 25;
+
+                if (lastDelay == 0) {
+                } // no Sleep
+                else {
+                    try {// do sleep!
+                        Thread.sleep(lastDelay);
+                    } catch (InterruptedException e) {
+                        // e.printStackTrace(); ignore this shit
+                    }
+                }
+                lastFrameStartingTime = tempTime;
+            }
+
+            if (tempTime >= fpsUpdateTime) {
+                i = (i + 1) % 5;
+                fpsUpdateTime += 200;
+                frames = frameCounter[0] + frameCounter[1] + frameCounter[2] + frameCounter[3] + frameCounter[4];
+                frameCounter[i] = 0;
+            }
+            frameCounter[i]++;
 	            /* END OF FPS CONTROL*/
-	            
-	            if(host.game.cycle(tempTime))
-	            	host.controls.cycle(tempTime);
-	            host.game.getBoard().cycle(tempTime);
-	            
-	            c = null;
-	            try {
-	               
-	                c = this.surfaceHolder.lockCanvas(null);
-	                synchronized (this.surfaceHolder) {                   
-	                    host.display.doDraw(c, frames);
-	                }
-	            } finally {
-	               
-	                if (c != null) {
-	                    this.surfaceHolder.unlockCanvasAndPost(c);
-	                    
-	                }
-	            }
+
+            if (host.game.cycle(tempTime))
+                host.controls.cycle(tempTime);
+            host.game.getBoard().cycle(tempTime);
+
+            c = null;
+            canvasAsync = null;
+            try {
+
+                c = this.surfaceHolder.lockCanvas(null);
+                if (secondHolder != null) {
+                    canvasAsync = this.secondHolder.lockCanvas(null);
+                }
+                synchronized (this.surfaceHolder) {
+                    host.display.doDraw(c, frames);
+                    host.display.doDraw(canvasAsync, frames);
+                }
+            } finally {
+
+                if (c != null) {
+                    this.surfaceHolder.unlockCanvasAndPost(c);
+                }
+                if( canvasAsync!=null){
+                    this.secondHolder.unlockCanvasAndPost(canvasAsync);
+                }
+            }
         }
     }
 
-	public void setFirstTime(boolean b) {
-		firstTime = b;
-	}
+    public void setFirstTime(boolean b) {
+        firstTime = b;
+    }
 
+    public void addHolder(SurfaceHolder holder) {
+        this.secondHolder = holder;
+    }
 }

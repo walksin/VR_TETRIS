@@ -76,13 +76,8 @@ public class GameActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-		if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean("pref_layoutswap", false)) {
-			setContentView(R.layout.activity_game_alt);
-			layoutSwap = true;
-		} else {
-			setContentView(R.layout.activity_game);
-			layoutSwap = false;
-		}
+        setContentView(R.layout.activity_game);
+        layoutSwap = false;
 
 		/* Read Starting Arguments */
 		Bundle b = getIntent().getExtras();
@@ -139,17 +134,17 @@ public class GameActivity extends FragmentActivity {
                 return true;
             }
         });
-//        ((BlockBoardView)findViewById(R.id.boardView2)).setOnTouchListener(new OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//                    controls.boardPressed(event.getX(), event.getY());
-//                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-//                    controls.boardReleased();
-//                }
-//                return true;
-//            }
-//        });
+        ((BlockBoardView)findViewById(R.id.boardView2)).setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    controls.boardPressed(event.getX(), event.getY());
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    controls.boardReleased();
+                }
+                return true;
+            }
+        });
 		((ImageButton)findViewById(R.id.rightButton)).setOnTouchListener(new OnTouchListener() {
 		    @Override
 		    public boolean onTouch(View v, MotionEvent event) {
@@ -225,8 +220,8 @@ public class GameActivity extends FragmentActivity {
 		((BlockBoardView)findViewById(R.id.boardView)).init();
 		((BlockBoardView)findViewById(R.id.boardView)).setHost(this);
 
-//        ((BlockBoardView)findViewById(R.id.boardView2)).init();
-//        ((BlockBoardView)findViewById(R.id.boardView2)).setHost(this);
+        ((BlockBoardView)findViewById(R.id.boardView2)).init();
+        ((BlockBoardView)findViewById(R.id.boardView2)).setHost(this);
 	}
 
     private boolean handleRight(MotionEvent event) {
@@ -245,17 +240,24 @@ public class GameActivity extends FragmentActivity {
 	 * @param caller
 	 */
 	public void startGame(BlockBoardView caller){
-		mainThread = new WorkThread(this, caller.getHolder());
-		mainThread.setFirstTime(false);
-		game.setRunning(true);
-		mainThread.setRunning(true);
-		mainThread.start();
+        if(mainThread == null){
+            mainThread = new WorkThread(this, caller.getHolder());
+            mainThread.setFirstTime(false);
+            game.setRunning(true);
+            mainThread.setRunning(true);
+            mainThread.start();
+        }else{
+            mainThread.addHolder(caller.getHolder());
+        }
 	}
 
 	/**
 	 * Called by BlockBoardView upon destruction
 	 */
 	public void destroyWorkThread() {
+        if(!mainThread.getRunning()){
+            return;
+        }
         boolean retry = true;
         mainThread.setRunning(false);
         while (retry) {
