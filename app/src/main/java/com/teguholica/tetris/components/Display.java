@@ -114,7 +114,9 @@ public class Display extends Component {
 		else
 			textLines = 8;
 	}
-	
+	public void drawBG(Canvas canvas){
+        canvas.drawColor(host.getResources().getColor(R.color.mask));
+    }
 	public void doDraw(Canvas c, int fps) {
 		if(c==null)
 			return;

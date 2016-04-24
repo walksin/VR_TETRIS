@@ -152,8 +152,10 @@ public class WorkThread extends Thread {
                     canvasAsync = this.secondHolder.lockCanvas(null);
                 }
                 synchronized (this.surfaceHolder) {
+                    host.display.drawBG(c);
                     host.display.doDraw(c, frames);
                     host.display.doDraw(canvasAsync, frames);
+                    host.display.drawBG(canvasAsync);
                 }
             } finally {
 

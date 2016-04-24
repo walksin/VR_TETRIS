@@ -75,19 +75,19 @@ public class Square {
 				paint.setColor(c.getResources().getColor(R.color.square_blue));
 				break;
 			case type_orange:
-				paint.setColor(c.getResources().getColor(R.color.square_orange));
+				paint.setColor(c.getResources().getColor(R.color.square_blue));
 				break;
 			case type_yellow:
 				paint.setColor(c.getResources().getColor(R.color.square_yellow));
 				break;
 			case type_red:
-				paint.setColor(c.getResources().getColor(R.color.square_red));
+				paint.setColor(c.getResources().getColor(R.color.square_blue));
 				break;
 			case type_green:
-				paint.setColor(c.getResources().getColor(R.color.square_green));
+				paint.setColor(c.getResources().getColor(R.color.square_yellow));
 				break;
 			case type_magenta:
-				paint.setColor(c.getResources().getColor(R.color.square_magenta));
+				paint.setColor(c.getResources().getColor(R.color.square_yellow));
 				break;
 			case type_cyan:
 				paint.setColor(c.getResources().getColor(R.color.square_cyan));

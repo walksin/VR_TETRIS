@@ -61,69 +61,69 @@ import com.teguholica.tetris.components.Sound;
 
 public class GameActivity extends FragmentActivity {
 
-	public Sound sound;
-	public Controls controls;
-	public Display display;
-	public GameState game;
-	private WorkThread mainThread;
-	private DefeatDialogFragment dialog;
-	private boolean layoutSwap;
+    public Sound sound;
+    public Controls controls;
+    public Display display;
+    public GameState game;
+    private WorkThread mainThread;
+    private DefeatDialogFragment dialog;
+    private boolean layoutSwap;
 
-	public static final int NEW_GAME = 0;
-	public static final int RESUME_GAME = 1;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+    public static final int NEW_GAME = 0;
+    public static final int RESUME_GAME = 1;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_game);
         layoutSwap = false;
 
 		/* Read Starting Arguments */
-		Bundle b = getIntent().getExtras();
-		int value = NEW_GAME;
-		
+        Bundle b = getIntent().getExtras();
+        int value = NEW_GAME;
+
 		/* Create Components */
-		game = (GameState)getLastCustomNonConfigurationInstance();
-		if(game == null) {
+        game = (GameState) getLastCustomNonConfigurationInstance();
+        if (game == null) {
 			/* Check for Resuming (or Resumption?) */
-			if(b!=null)
-				value = b.getInt("mode");
-				
-			if((value == NEW_GAME)) {
-				game = GameState.getNewInstance(this);
-				game.setLevel(b.getInt("level"));
-			} else
-				game = GameState.getInstance(this);
-		}
-		game.reconnect(this);
-		dialog = new DefeatDialogFragment();
-		controls = new Controls(this);
-		display = new Display(this);
-		sound = new Sound(this);
+            if (b != null)
+                value = b.getInt("mode");
+
+            if ((value == NEW_GAME)) {
+                game = GameState.getNewInstance(this);
+                game.setLevel(b.getInt("level"));
+            } else
+                game = GameState.getInstance(this);
+        }
+        game.reconnect(this);
+        dialog = new DefeatDialogFragment();
+        controls = new Controls(this);
+        display = new Display(this);
+        sound = new Sound(this);
 		
 		/* Init Components */
-		if(game.isResumable())
-			sound.startMusic(Sound.GAME_MUSIC, game.getSongtime());
-		sound.loadEffects();
-		if(b!=null){
-			value = b.getInt("mode");
-			if(b.getString("playername") != null)
-				game.setPlayerName(b.getString("playername"));
-		} else 
-			game.setPlayerName(getResources().getString(R.string.anonymous));
-		dialog.setCancelable(false);
-		if(!game.isResumable())
-			gameOver(game.getScore(), game.getTimeString(), game.getAPM());
+        if (game.isResumable())
+            sound.startMusic(Sound.GAME_MUSIC, game.getSongtime());
+        sound.loadEffects();
+        if (b != null) {
+            value = b.getInt("mode");
+            if (b.getString("playername") != null)
+                game.setPlayerName(b.getString("playername"));
+        } else
+            game.setPlayerName(getResources().getString(R.string.anonymous));
+        dialog.setCancelable(false);
+        if (!game.isResumable())
+            gameOver(game.getScore(), game.getTimeString(), game.getAPM());
 		
 		/* Register Button callback Methods */
-		((Button)findViewById(R.id.pausebutton_1)).setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				GameActivity.this.finish();
-			}
-		});
-		((BlockBoardView)findViewById(R.id.boardView)).setOnTouchListener(new OnTouchListener() {
+        ((Button) findViewById(R.id.pausebutton_1)).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                GameActivity.this.finish();
+            }
+        });
+        ((BlockBoardView) findViewById(R.id.boardView)).setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -134,7 +134,7 @@ public class GameActivity extends FragmentActivity {
                 return true;
             }
         });
-        ((BlockBoardView)findViewById(R.id.boardView2)).setOnTouchListener(new OnTouchListener() {
+        ((BlockBoardView) findViewById(R.id.boardView2)).setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -145,213 +145,218 @@ public class GameActivity extends FragmentActivity {
                 return true;
             }
         });
-		((ImageButton)findViewById(R.id.rightButton)).setOnTouchListener(new OnTouchListener() {
-		    @Override
-		    public boolean onTouch(View v, MotionEvent event) {
+        ((ImageButton) findViewById(R.id.rightButton)).setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
                 return handleRight(event);
-		    }
-		});
-		((ImageButton)findViewById(R.id.leftButton)).setOnTouchListener(new OnTouchListener() {
-		    @Override
-		    public boolean onTouch(View v, MotionEvent event) {
-		        if(event.getAction() == MotionEvent.ACTION_DOWN) {
-		        	controls.leftButtonPressed();
-		        	((ImageButton)findViewById(R.id.leftButton)).setPressed(true);
-		        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-		        	controls.leftButtonReleased();
-		        	((ImageButton)findViewById(R.id.leftButton)).setPressed(false);
-		        }
-		        return true;
-		    }
-		});
-		((ImageButton)findViewById(R.id.softDropButton)).setOnTouchListener(new OnTouchListener() {
-		    @Override
-		    public boolean onTouch(View v, MotionEvent event) {
-		        if(event.getAction() == MotionEvent.ACTION_DOWN) {
-		        	controls.downButtonPressed();
-		        	((ImageButton)findViewById(R.id.softDropButton)).setPressed(true);
-		        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-		        	controls.downButtonReleased();
-		        	((ImageButton)findViewById(R.id.softDropButton)).setPressed(false);
-		        }
-		        return true;
-		    }
-		});
-		((ImageButton)findViewById(R.id.hardDropButton)).setOnTouchListener(new OnTouchListener() {
-		    @Override
-		    public boolean onTouch(View v, MotionEvent event) {
-		        if(event.getAction() == MotionEvent.ACTION_DOWN) {
-		        	controls.dropButtonPressed();
-		        	((ImageButton)findViewById(R.id.hardDropButton)).setPressed(true);
-		        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-		        	controls.dropButtonReleased();
-		        	((ImageButton)findViewById(R.id.hardDropButton)).setPressed(false);
-		        }
-		        return true;
-		    }
-		});
-		((ImageButton)findViewById(R.id.rotateRightButton)).setOnTouchListener(new OnTouchListener() {
-		    @Override
-		    public boolean onTouch(View v, MotionEvent event) {
-		        if(event.getAction() == MotionEvent.ACTION_DOWN) {
-		        	controls.rotateRightPressed();
-		        	((ImageButton)findViewById(R.id.rotateRightButton)).setPressed(true);
-		        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-		        	controls.rotateRightReleased();
-		        	((ImageButton)findViewById(R.id.rotateRightButton)).setPressed(false);
-		        }
-		        return true;
-		    }
-		});
-		((ImageButton)findViewById(R.id.rotateLeftButton)).setOnTouchListener(new OnTouchListener() {
-		    @Override
-		    public boolean onTouch(View v, MotionEvent event) {
-		        if(event.getAction() == MotionEvent.ACTION_DOWN) {
-		        	controls.rotateLeftPressed();
-		        	((ImageButton)findViewById(R.id.rotateLeftButton)).setPressed(true);
-		        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-		        	controls.rotateLeftReleased();
-		        	((ImageButton)findViewById(R.id.rotateLeftButton)).setPressed(false);
-		        }
-		        return true;
-		    }
-		});
+            }
+        });
+        ((ImageButton) findViewById(R.id.leftButton)).setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    controls.leftButtonPressed();
+                    ((ImageButton) findViewById(R.id.leftButton)).setPressed(true);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    controls.leftButtonReleased();
+                    ((ImageButton) findViewById(R.id.leftButton)).setPressed(false);
+                }
+                return true;
+            }
+        });
+        ((ImageButton) findViewById(R.id.softDropButton)).setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    controls.downButtonPressed();
+                    ((ImageButton) findViewById(R.id.softDropButton)).setPressed(true);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    controls.downButtonReleased();
+                    ((ImageButton) findViewById(R.id.softDropButton)).setPressed(false);
+                }
+                return true;
+            }
+        });
+        ((ImageButton) findViewById(R.id.hardDropButton)).setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    controls.dropButtonPressed();
+                    ((ImageButton) findViewById(R.id.hardDropButton)).setPressed(true);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    controls.dropButtonReleased();
+                    ((ImageButton) findViewById(R.id.hardDropButton)).setPressed(false);
+                }
+                return true;
+            }
+        });
+        ((ImageButton) findViewById(R.id.rotateRightButton)).setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    controls.rotateRightPressed();
+                    ((ImageButton) findViewById(R.id.rotateRightButton)).setPressed(true);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    controls.rotateRightReleased();
+                    ((ImageButton) findViewById(R.id.rotateRightButton)).setPressed(false);
+                }
+                return true;
+            }
+        });
+        ((ImageButton) findViewById(R.id.rotateLeftButton)).setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    controls.rotateLeftPressed();
+                    ((ImageButton) findViewById(R.id.rotateLeftButton)).setPressed(true);
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    controls.rotateLeftReleased();
+                    ((ImageButton) findViewById(R.id.rotateLeftButton)).setPressed(false);
+                }
+                return true;
+            }
+        });
 
-		((BlockBoardView)findViewById(R.id.boardView)).init();
-		((BlockBoardView)findViewById(R.id.boardView)).setHost(this);
+        ((BlockBoardView) findViewById(R.id.boardView)).init();
+        ((BlockBoardView) findViewById(R.id.boardView)).setHost(this);
 
-        ((BlockBoardView)findViewById(R.id.boardView2)).init();
-        ((BlockBoardView)findViewById(R.id.boardView2)).setHost(this);
-	}
+        ((BlockBoardView) findViewById(R.id.boardView2)).init();
+        ((BlockBoardView) findViewById(R.id.boardView2)).setHost(this);
+    }
 
     private boolean handleRight(MotionEvent event) {
-        if(event.getAction() == MotionEvent.ACTION_DOWN) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
             controls.rightButtonPressed();
-            ((ImageButton)findViewById(R.id.rightButton)).setPressed(true);
+            ((ImageButton) findViewById(R.id.rightButton)).setPressed(true);
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
             controls.rightButtonReleased();
-            ((ImageButton)findViewById(R.id.rightButton)).setPressed(false);
+            ((ImageButton) findViewById(R.id.rightButton)).setPressed(false);
         }
         return true;
     }
 
     /**
-	 * Called by BlockBoardView upon completed creation
-	 * @param caller
-	 */
-	public void startGame(BlockBoardView caller){
-        if(mainThread == null){
+     * Called by BlockBoardView upon completed creation
+     *
+     * @param caller
+     */
+    public void startGame(BlockBoardView caller) {
+        if (mainThread == null) {
             mainThread = new WorkThread(this, caller.getHolder());
             mainThread.setFirstTime(false);
             game.setRunning(true);
             mainThread.setRunning(true);
             mainThread.start();
-        }else{
+        } else {
             mainThread.addHolder(caller.getHolder());
         }
-	}
+    }
 
-	/**
-	 * Called by BlockBoardView upon destruction
-	 */
-	public void destroyWorkThread() {
-        if(!mainThread.getRunning()){
+    /**
+     * Called by BlockBoardView upon destruction
+     */
+    public void destroyWorkThread() {
+        if (!mainThread.getRunning()) {
             return;
         }
         boolean retry = true;
         mainThread.setRunning(false);
         while (retry) {
             try {
-            	mainThread.join();
+                mainThread.join();
                 retry = false;
             } catch (InterruptedException e) {
-                
+
             }
         }
-	}
-	
-	/**
-	 * Called by GameState upon Defeat
-	 * @param score
-	 */
-	public void putScore(long score) {
-		String playerName = game.getPlayerName();
-		if(playerName == null || playerName.equals(""))
-			playerName = getResources().getString(R.string.anonymous);//"Anonymous";
-		
-		Intent data = new Intent();
-		data.putExtra(MainActivity.PLAYERNAME_KEY, playerName);
-		data.putExtra(MainActivity.SCORE_KEY, score);
-		setResult(MainActivity.RESULT_OK, data);
-		
-		finish();
-	}
-	
-	@Override
-	protected void onPause() {
-    	super.onPause();
-    	sound.pause();
-    	sound.setInactive(true);
-    	game.setRunning(false);
-	};
-    
+    }
+
+    /**
+     * Called by GameState upon Defeat
+     *
+     * @param score
+     */
+    public void putScore(long score) {
+        String playerName = game.getPlayerName();
+        if (playerName == null || playerName.equals(""))
+            playerName = getResources().getString(R.string.anonymous);//"Anonymous";
+
+        Intent data = new Intent();
+        data.putExtra(MainActivity.PLAYERNAME_KEY, playerName);
+        data.putExtra(MainActivity.SCORE_KEY, score);
+        setResult(MainActivity.RESULT_OK, data);
+
+        finish();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sound.pause();
+        sound.setInactive(true);
+        game.setRunning(false);
+    }
+
+    ;
+
     @Override
     protected void onStop() {
-    	super.onStop();
-    	sound.pause();
-    	sound.setInactive(true);
-    };
-    
+        super.onStop();
+        sound.pause();
+        sound.setInactive(true);
+    }
+
+    ;
+
     @Override
     protected void onDestroy() {
-    	super.onDestroy();
-    	game.setSongtime(sound.getSongtime());
-    	sound.release();
-    	sound = null;
-    	game.disconnect();
-    };
-    
+        super.onDestroy();
+        game.setSongtime(sound.getSongtime());
+        sound.release();
+        sound = null;
+        game.disconnect();
+    }
+
+    ;
+
     @Override
     protected void onResume() {
-    	super.onResume();
-    	sound.resume();
-    	sound.setInactive(false);
+        super.onResume();
+        sound.resume();
+        sound.setInactive(false);
     	
     	/* Check for changed Layout */
-    	boolean tempswap = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("pref_layoutswap", false);
-		if(layoutSwap != tempswap) {
-			layoutSwap = tempswap;
-			if(layoutSwap) {
-				setContentView(R.layout.activity_game_alt);
-			} else {
-				setContentView(R.layout.activity_game);
-			}
-		}
-    	game.setRunning(true);
-    };
+        boolean tempswap = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("pref_layoutswap", false);
+        if (layoutSwap != tempswap) {
+            layoutSwap = tempswap;
+            if (layoutSwap) {
+                setContentView(R.layout.activity_game_alt);
+            } else {
+                setContentView(R.layout.activity_game);
+            }
+        }
+        game.setRunning(true);
+    }
+
+    ;
 
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         Log.e("wtf", keyCode + "" + "  event:" + event.getAction());
-        if(keyCode>18&&keyCode<23){
+        if (keyCode == 20) {
             //往下一格
-            controls.downButtonReleased();
-        }
-        else if(keyCode == 102){
+            controls.dropButtonReleased();
+        } else if (keyCode == 22) {
             //往右
             controls.rightButtonReleased();
-        }
-
-        else if(keyCode == 103){
+        } else if (keyCode == 21) {
             //左边
             controls.leftButtonReleased();
-        }
-
-        else if(keyCode == 104){
+        } else if (keyCode == 103 || keyCode == 102 || keyCode == 19) {
             //变化
             controls.rotateRightReleased();
-        }else {
+        } else {
             return super.onKeyUp(keyCode, event);
         }
         return true;
@@ -361,37 +366,36 @@ public class GameActivity extends FragmentActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.e("wtf", keyCode + "" + "  event:" + event.getAction());
-        if(keyCode>18&&keyCode<23){
-            //往下一格
-            controls.downButtonPressed();
-        }
-        else if(keyCode == 102){
-            //往右
-            controls.rightButtonPressed();
-        }
 
-        else if(keyCode == 103){
-            //左边
-            controls.leftButtonPressed();
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (keyCode == 20) {
+                //往下一格
+                controls.dropButtonPressed();
+            } else if (keyCode == 22) {
+                //往右
+                controls.rightButtonPressed();
+            } else if (keyCode == 21) {
+                //左边
+                controls.leftButtonPressed();
+            } else if (keyCode == 103 || keyCode == 102 || keyCode == 19) {
+                //变化
+                controls.rotateRightPressed();
+            } else {
+                return super.onKeyDown(keyCode, event);
+            }
+            return true;
         }
-
-        else if(keyCode == 104){
-            //变化
-            controls.rotateRightPressed();
-        }else {
-            return super.onKeyDown(keyCode, event);
-        }
-        return true;
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
-    public Object onRetainCustomNonConfigurationInstance () {
+    public Object onRetainCustomNonConfigurationInstance() {
         return game;
     }
-	
-	public void gameOver(long score, String gameTime, int apm) {
-		dialog.setData(score, gameTime, apm);
-		dialog.show(getSupportFragmentManager(), "hamster");
-	}
+
+    public void gameOver(long score, String gameTime, int apm) {
+        dialog.setData(score, gameTime, apm);
+        dialog.show(getSupportFragmentManager(), "hamster");
+    }
 
 }
